@@ -155,25 +155,29 @@ class DRO:
         Done = False
         while not Done:
             _ = self.env.reset()
-            terminated = False
-            pos = self.env.agent_start_state
-            state = pos2state(pos, self.gridsize)
-            action = np.random.choice(range(self.actions))
-            while not terminated:
-                next_pos, r, terminated, _ = self.env.step(action)
-                next_state = pos2state(next_pos, self.gridsize)
-                action = np.random.choice(range(self.actions))
-                self.dataset.add(state, action, next_state, r, terminated)
-                state = next_state
-                if self.dataset.__len__() > self.args.buffersize:
+            max_step = 10
+            for s in range(len(self.states)):
+                step = 0
+                state = self.states[s]
+                pos = state2pos(state, self.gridsize)
+                self.env.change_start_state(pos)
+                while step < max_step:
+                    step += 1
+                    action = np.random.choice(range(self.actions))
+                    next_pos, r, terminated, _ = self.env.step(action)
+                    next_state = pos2state(next_pos, self.gridsize)
+                    self.dataset.add(state, action, next_state, r, terminated)
+                    state = next_state
+                if self.dataset.__len__() == self.args.buffersize:
                     Done = True
                     break
+                print(self.dataset.__len__())
 
     def make_datafreq(self):
         for s in range(len(self.states)):
             for a in range(self.actions):
                 for s_next in range(len(self.states)):
-                    self.datafreq[s][a][s_next] = self.dataset.inquire_num(s,a,s_next)
+                    self.datafreq[s, a, s_next] = self.dataset.inquire_num(self.states[s],a,self.states[s_next])
 
     def run(self):
         # sample offline dataset
@@ -192,22 +196,25 @@ class DRO:
         while True:
             epoch += 1
             delta = 0
+            V_pre = copy.copy(V)
             for s in range(len(self.states)):
                 Q = np.zeros(self.actions)
                 for a in range(self.actions):
                     center = self.datafreq[s][a] / np.sum(self.datafreq[s][a])
                     radius = self.get_radius(s, a)
-                    solution = TV_opt(V, center, radius)
+                    solution = TV_opt(V_pre, center, radius)
                     Q[a] += self.rewardmap[s][a] + self.args.gamma * solution
-                Vs = np.sum(Q)
+                Vs = np.max(Q)
                 policy[s][np.argmax(Q)] = 1.0
-                delta = max(delta, np.abs(Vs - V[s]))
                 V[s] = Vs
+            V = (V-np.min(V))/(np.max(V)-np.min(V))
             reward, end_step = self.run_with_current_policy(policy)
             rewards.append(reward)
             end_steps.append(end_step)
+            delta = max(delta, np.mean(np.abs(V_pre - V)))
             if delta < self.args.theta:
                 break
+            print(epoch, delta)
         plt.figure()
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4), dpi=100)
         ax1.plot(rewards)

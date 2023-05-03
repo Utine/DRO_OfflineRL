@@ -107,13 +107,10 @@ def ep_dis(sample_list):
     return ep_distribution
 
 
-def TV_opt(V, sample_dis):
-    V_inner = V
-    V_inner = np.array(V_inner)
-    sample_dis = np.array(sample_dis)
-    x = cp.Variable(S_n)
-    objective = cp.Maximize((sample_dis @ (V_inner - x) - R * (cp.max(V_inner - x) - cp.min(V_inner - x))))
+def TV_opt(V, center, radius):
+    x = V.size
+    objective = cp.Maximize((center @ (V - x) - radius * (cp.max(V - x) - cp.min(V - x))))
     constraints = [0 <= x]
     prob = cp.Problem(objective, constraints)
     prob.solve()  # Returns the optimal value.
-    return (prob.value)
+    return prob.value

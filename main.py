@@ -12,8 +12,8 @@ if __name__ == "__main__":
 
     algo = DP(args)
     policy = algo.run()
-    np.savetxt('./learnedpolicy/DP.csv', policy, delimiter=',')
+    # np.savetxt('./learnedpolicy/DP.csv', policy, delimiter=',')
 
-    algo = DRO(args)
-    policy = algo.run()
-    np.savetxt('./learnedpolicy/DRO.csv', policy, delimiter=',')
+    # algo = DRO(args)
+    # policy = algo.run()
+    # np.savetxt('./learnedpolicy/DRO.csv', policy, delimiter=',')
