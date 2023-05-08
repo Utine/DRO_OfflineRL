@@ -34,7 +34,7 @@ class GridworldEnv(gym.Env):
         ''' initialize system state ''' 
         this_file_path = os.path.dirname(os.path.realpath(__file__))
         self.grid_map_path = os.path.join(this_file_path, 'plan5.txt')
-        self.start_grid_map = self._read_grid_map(self.grid_map_path) # initial grid map
+        self.start_grid_map = self._read_grid_map(self.grid_map_path)  # initial grid map
         wall = np.array(np.where(self.start_grid_map == 1))
         self.wall_pos = [(wall[0][i], wall[1][i]) for i in range(wall.shape[1])]
         self.current_grid_map = copy.deepcopy(self.start_grid_map)  # current grid map
@@ -63,13 +63,13 @@ class GridworldEnv(gym.Env):
         info = {}
         info['success'] = False
         nxt_agent_state = (self.agent_state[0] + self.action_pos_dict[action][0],
-                            self.agent_state[1] + self.action_pos_dict[action][1])
+                           self.agent_state[1] + self.action_pos_dict[action][1])
         if action == 0: # stay in place
             info['success'] = True
-            return (nxt_agent_state, -0.1, False, info)
+            return (nxt_agent_state, -1, False, info)
         if nxt_agent_state in self.wall_pos:
             nxt_agent_state = self.agent_state
-            return (nxt_agent_state, -1, False, info)
+            return (nxt_agent_state, -100, False, info)
         # successful behavior
         org_color = self.current_grid_map[self.agent_state[0], self.agent_state[1]]
         new_color = self.current_grid_map[nxt_agent_state[0], nxt_agent_state[1]]
@@ -95,13 +95,13 @@ class GridworldEnv(gym.Env):
             if self.restart_once_done:
                 self.observation = self.reset()
                 info['success'] = True
-                return (nxt_agent_state, 1, True, info)
+                return (nxt_agent_state, 1000, True, info)
             else:
                 info['success'] = True
-                return (nxt_agent_state, 1, True, info)
+                return (nxt_agent_state, 1000, True, info)
         else:
             info['success'] = True
-            return (nxt_agent_state, 0, False, info)
+            return (nxt_agent_state, 1, False, info)
 
     def reset(self):
         self.agent_state = copy.deepcopy(self.agent_start_state)

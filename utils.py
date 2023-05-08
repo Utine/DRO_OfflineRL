@@ -108,7 +108,7 @@ def ep_dis(sample_list):
 
 
 def TV_opt(V, center, radius):
-    x = V.size
+    x = cp.Variable(V.size)
     objective = cp.Maximize((center @ (V - x) - radius * (cp.max(V - x) - cp.min(V - x))))
     constraints = [0 <= x]
     prob = cp.Problem(objective, constraints)

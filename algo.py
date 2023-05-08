@@ -189,32 +189,36 @@ class DRO:
 
     def policy_iter(self):
         V = np.zeros(len(self.states))
-        policy = np.zeros([len(self.states), self.actions]) / self.actions
         epoch = 0  # update policy per epoch
+        max_epoch = 100
         rewards = []
         end_steps = []
+        record = np.zeros((max_epoch, len(self.states)))
         while True:
+            record[epoch, :] = V
             epoch += 1
             delta = 0
             V_pre = copy.copy(V)
+            policy = np.zeros([len(self.states), self.actions]) / self.actions
             for s in range(len(self.states)):
                 Q = np.zeros(self.actions)
                 for a in range(self.actions):
                     center = self.datafreq[s][a] / np.sum(self.datafreq[s][a])
-                    radius = self.get_radius(s, a)
+                    # radius = self.get_radius(s, a)
+                    radius = 0.2
                     solution = TV_opt(V_pre, center, radius)
                     Q[a] += self.rewardmap[s][a] + self.args.gamma * solution
                 Vs = np.max(Q)
                 policy[s][np.argmax(Q)] = 1.0
                 V[s] = Vs
-            V = (V-np.min(V))/(np.max(V)-np.min(V))
             reward, end_step = self.run_with_current_policy(policy)
             rewards.append(reward)
             end_steps.append(end_step)
             delta = max(delta, np.mean(np.abs(V_pre - V)))
-            if delta < self.args.theta:
-                break
             print(epoch, delta)
+            if epoch > max_epoch-1:
+                break
+        np.savetxt('csvs/dro_value.csv', record, delimiter=',')
         plt.figure()
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4), dpi=100)
         ax1.plot(rewards)

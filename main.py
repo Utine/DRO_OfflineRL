@@ -10,10 +10,10 @@ if __name__ == "__main__":
     params = yaml.load(stream=f, Loader=yaml.FullLoader)
     args = parser_from_dict(params)
 
-    algo = DP(args)
-    policy = algo.run()
+    # algo = DP(args)
+    # policy = algo.run()
     # np.savetxt('./learnedpolicy/DP.csv', policy, delimiter=',')
 
-    # algo = DRO(args)
-    # policy = algo.run()
-    # np.savetxt('./learnedpolicy/DRO.csv', policy, delimiter=',')
+    algo = DRO(args)
+    policy = algo.run()
+    np.savetxt('./learnedpolicy/DRO.csv', policy, delimiter=',')
