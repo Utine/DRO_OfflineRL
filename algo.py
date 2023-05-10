@@ -63,7 +63,7 @@ class DP:
         ax2.set_ylabel('Steps before terminate')
         ax2.grid()
         plt.show()
-        self.demo(policy)
+        # self.demo(policy)
         return policy
 
     def policy_evaluation(self, policy):
@@ -77,6 +77,7 @@ class DP:
                 Vs = self.cal_v(s, V, policy)
                 delta = max(delta, np.abs(Vs - V[s]))
                 V[s] = Vs
+            print(delta)
             if delta < self.args.theta:
                 break
             step += 1
@@ -115,16 +116,22 @@ class DP:
         return reward, step
 
     def demo(self, policy):
-        self.env.verbose = True
+        # self.env.verbose = True
         _ = self.env.reset()
         terminated = False
         pos = self.env.agent_start_state
         state = pos2state(pos, self.gridsize)
         action = np.argmax(policy[self.states.index(state)])
-        while not terminated:
+        total_reward = 0
+        step = 0
+        while (not terminated) or (step < self.args.maxstep):
+            step += 1
             pos, r, terminated, _ = self.env.step(action)
+            total_reward += r
             state = pos2state(pos, self.gridsize)
             action = np.argmax(policy[self.states.index(state)])
+
+        return total_reward
 
 
 class DRO:
@@ -184,7 +191,6 @@ class DRO:
         self.make_dataset()
         self.make_datafreq()
         V, policy = self.policy_iter()
-        self.demo(policy)
         return policy
 
     def policy_iter(self):
@@ -205,7 +211,7 @@ class DRO:
                 for a in range(self.actions):
                     center = self.datafreq[s][a] / np.sum(self.datafreq[s][a])
                     # radius = self.get_radius(s, a)
-                    radius = 0.2
+                    radius = 0.4
                     solution = TV_opt(V_pre, center, radius)
                     Q[a] += self.rewardmap[s][a] + self.args.gamma * solution
                 Vs = np.max(Q)
@@ -257,16 +263,23 @@ class DRO:
         return reward, step
 
     def demo(self, policy):
-        self.env.verbose = True
+        # self.env.verbose = True
         _ = self.env.reset()
         terminated = False
         pos = self.env.agent_start_state
         state = pos2state(pos, self.gridsize)
         action = np.argmax(policy[self.states.index(state)])
-        while not terminated:
+        total_reward = 0
+        step = 0
+        max_step = 500  # surpass max_step stop the env
+        while (not terminated) or (step < max_step):
+            step += 1
             pos, r, terminated, _ = self.env.step(action)
+            total_reward += r
             state = pos2state(pos, self.gridsize)
             action = np.argmax(policy[self.states.index(state)])
+
+        return total_reward
 
 
 class ReplayBuffer(object):
