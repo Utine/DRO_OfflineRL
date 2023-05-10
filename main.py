@@ -35,7 +35,7 @@ if __name__ == "__main__":
         np.savetxt('./learnedpolicy/' + exp_name + '.csv', DRO_policy, delimiter=',')
 
     Reward_diff = np.array(DRO_total_rewards) - DP_total_rewards
-    np.savetxt('./learnedpolicy/DP.csv')
+    np.savetxt('./csvs/reward_diff_with_datasize.csv', Reward_diff, delimiter=',')
     sns.set(rc={'figure.figsize': (16, 12)})
     sns.set_theme(style="whitegrid", font_scale=3)
     dict = {'Dataset Size': 1000*(np.arange(args.num)+1),
