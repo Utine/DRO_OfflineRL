@@ -3,6 +3,7 @@ import yaml
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import wandb
 from utils import parser_from_dict
 from algo import DP, DRO
 
@@ -11,6 +12,8 @@ if __name__ == "__main__":
     f = open("./params.yaml", encoding="utf-8")
     params = yaml.load(stream=f, Loader=yaml.FullLoader)
     args = parser_from_dict(params)
+
+    wandb.init(project='OfflineRL', name='DRO')
 
     # Run our baseline
     algo = DP(args)
@@ -42,6 +45,9 @@ if __name__ == "__main__":
             'Rewards Difference': Reward_diff}
     pd = pd.DataFrame(dict)
     sns.lmplot(data=pd, x='Dataset Size', y='Rewards Difference')
+    plt.savefig('imgs/' + 'RewardDiff_Dataset_Size.png', dpi=200)
+    wandb.log({"RewardDiff_Dataset_Size": wandb.Image('imgs/' + 'RewardDiff_Dataset_Size.png')})
     plt.show()
+    plt.close()
 
     # Exp 2: fix buffer size, adjust gamma
