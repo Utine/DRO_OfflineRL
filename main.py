@@ -26,6 +26,7 @@ if __name__ == "__main__":
     # Start Run DRO
     base_buffersize = 1000
     DRO_total_rewards = []
+    DRO_step_for_terminated = []
 
     # Exp 1: fix gamma, adjust buffer size
     for i in range(args.num):
@@ -33,20 +34,30 @@ if __name__ == "__main__":
         exp_name = 'DRO' + str(i) + '_' + str(args.buffersize)
         algo = DRO(args)
         DRO_policy = algo.run()
-        DRO_rewards = algo.demo(DRO_policy)
+        DRO_rewards, step = algo.demo(DRO_policy)
         DRO_total_rewards.append(DRO_rewards)
+        DRO_step_for_terminated.append(step)
         np.savetxt('./learnedpolicy/' + exp_name + '.csv', DRO_policy, delimiter=',')
 
     Reward_diff = np.array(DRO_total_rewards) - DP_total_rewards
+    StepCost = np.array(DRO_step_for_terminated)
     np.savetxt('./csvs/reward_diff_with_datasize.csv', Reward_diff, delimiter=',')
+    np.savetxt('./csvs/step_terminate_with_datasize.csv', StepCost, delimiter=',')
     sns.set(rc={'figure.figsize': (16, 12)})
     sns.set_theme(style="whitegrid", font_scale=3)
     dict = {'Dataset Size': 1000*(np.arange(args.num)+1),
-            'Rewards Difference': Reward_diff}
+            'Rewards Difference': Reward_diff,
+            'Step Cost': StepCost}
     pd = pd.DataFrame(dict)
     sns.lmplot(data=pd, x='Dataset Size', y='Rewards Difference')
     plt.savefig('imgs/' + 'RewardDiff_Dataset_Size.png', dpi=200)
     wandb.log({"RewardDiff_Dataset_Size": wandb.Image('imgs/' + 'RewardDiff_Dataset_Size.png')})
+    plt.show()
+    plt.close()
+
+    sns.lmplot(data=pd, x='Dataset Size', y='Step Cost')
+    plt.savefig('imgs/' + 'StepCost_Dataset_Size.png', dpi=200)
+    wandb.log({"StepCost_Dataset_Size": wandb.Image('imgs/' + 'StepCost_Dataset_Size.png')})
     plt.show()
     plt.close()
 

@@ -131,7 +131,7 @@ class DP:
             state = pos2state(pos, self.gridsize)
             action = np.argmax(policy[self.states.index(state)])
 
-        return total_reward
+        return total_reward, step
 
 
 class DRO:
@@ -279,7 +279,7 @@ class DRO:
             state = pos2state(pos, self.gridsize)
             action = np.argmax(policy[self.states.index(state)])
 
-        return total_reward
+        return total_reward, step
 
 
 class ReplayBuffer(object):

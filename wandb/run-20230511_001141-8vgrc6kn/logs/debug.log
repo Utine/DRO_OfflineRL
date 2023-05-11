@@ -1,0 +1,21 @@
+2023-05-11 00:11:41,099 INFO    MainThread:36548 [wandb_setup.py:_flush():76] Current SDK version is 0.15.2
+2023-05-11 00:11:41,099 INFO    MainThread:36548 [wandb_setup.py:_flush():76] Configure stats pid to 36548
+2023-05-11 00:11:41,099 INFO    MainThread:36548 [wandb_setup.py:_flush():76] Loading settings from /Users/eduora/.config/wandb/settings
+2023-05-11 00:11:41,100 INFO    MainThread:36548 [wandb_setup.py:_flush():76] Loading settings from /Users/eduora/PycharmProjects/DRO_OfflineRL/wandb/settings
+2023-05-11 00:11:41,100 INFO    MainThread:36548 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2023-05-11 00:11:41,100 INFO    MainThread:36548 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2023-05-11 00:11:41,100 INFO    MainThread:36548 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'main.py', 'program': '/Users/eduora/PycharmProjects/DRO_OfflineRL/main.py'}
+2023-05-11 00:11:41,100 INFO    MainThread:36548 [wandb_init.py:_log_setup():507] Logging user logs to /Users/eduora/PycharmProjects/DRO_OfflineRL/wandb/run-20230511_001141-8vgrc6kn/logs/debug.log
+2023-05-11 00:11:41,100 INFO    MainThread:36548 [wandb_init.py:_log_setup():508] Logging internal logs to /Users/eduora/PycharmProjects/DRO_OfflineRL/wandb/run-20230511_001141-8vgrc6kn/logs/debug-internal.log
+2023-05-11 00:11:41,101 INFO    MainThread:36548 [wandb_init.py:init():547] calling init triggers
+2023-05-11 00:11:41,101 INFO    MainThread:36548 [wandb_init.py:init():554] wandb.init called with sweep_config: {}
+config: {}
+2023-05-11 00:11:41,101 INFO    MainThread:36548 [wandb_init.py:init():596] starting backend
+2023-05-11 00:11:41,101 INFO    MainThread:36548 [wandb_init.py:init():600] setting up manager
+2023-05-11 00:11:41,105 INFO    MainThread:36548 [backend.py:_multiprocessing_setup():106] multiprocessing start_methods=spawn,fork,forkserver, using: spawn
+2023-05-11 00:11:41,109 INFO    MainThread:36548 [wandb_init.py:init():606] backend started and connected
+2023-05-11 00:11:41,117 INFO    MainThread:36548 [wandb_init.py:init():700] updated telemetry
+2023-05-11 00:11:41,143 INFO    MainThread:36548 [wandb_init.py:init():737] communicating run to backend with 60.0 second timeout
+2023-05-11 00:11:41,418 INFO    MainThread:36548 [wandb_run.py:_on_init():2177] communicating current version
+2023-05-11 00:11:41,534 INFO    MainThread:36548 [wandb_run.py:_on_init():2186] got version response 
+2023-05-11 00:11:41,534 INFO    MainThread:36548 [wandb_init.py:init():787] starting run threads in backend

@@ -1,0 +1,31 @@
+2023-05-11 00:11:41,111 INFO    StreamThr :36560 [internal.py:wandb_internal():86] W&B internal server running at pid: 36560, started at: 2023-05-11 00:11:41.110592
+2023-05-11 00:11:41,112 DEBUG   HandlerThread:36560 [handler.py:handle_request():144] handle_request: status
+2023-05-11 00:11:41,118 INFO    WriterThread:36560 [datastore.py:open_for_write():85] open: /Users/eduora/PycharmProjects/DRO_OfflineRL/wandb/run-20230511_001141-8vgrc6kn/run-8vgrc6kn.wandb
+2023-05-11 00:11:41,118 DEBUG   SenderThread:36560 [sender.py:send():375] send: header
+2023-05-11 00:11:41,144 DEBUG   SenderThread:36560 [sender.py:send():375] send: run
+2023-05-11 00:11:41,425 DEBUG   HandlerThread:36560 [handler.py:handle_request():144] handle_request: check_version
+2023-05-11 00:11:41,426 INFO    SenderThread:36560 [dir_watcher.py:__init__():219] watching files in: /Users/eduora/PycharmProjects/DRO_OfflineRL/wandb/run-20230511_001141-8vgrc6kn/files
+2023-05-11 00:11:41,426 INFO    SenderThread:36560 [sender.py:_start_run_threads():1124] run started: 8vgrc6kn with start time 1683778301.110087
+2023-05-11 00:11:41,427 DEBUG   SenderThread:36560 [sender.py:send_request():402] send_request: summary_record
+2023-05-11 00:11:41,427 INFO    SenderThread:36560 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-11 00:11:41,427 DEBUG   SenderThread:36560 [sender.py:send_request():402] send_request: check_version
+2023-05-11 00:11:41,542 DEBUG   HandlerThread:36560 [handler.py:handle_request():144] handle_request: run_start
+2023-05-11 00:11:41,554 DEBUG   HandlerThread:36560 [system_info.py:__init__():31] System info init
+2023-05-11 00:11:41,555 DEBUG   HandlerThread:36560 [system_info.py:__init__():46] System info init done
+2023-05-11 00:11:41,555 INFO    HandlerThread:36560 [system_monitor.py:start():181] Starting system monitor
+2023-05-11 00:11:41,555 INFO    SystemMonitor:36560 [system_monitor.py:_start():145] Starting system asset monitoring threads
+2023-05-11 00:11:41,555 INFO    HandlerThread:36560 [system_monitor.py:probe():201] Collecting system info
+2023-05-11 00:11:41,556 INFO    SystemMonitor:36560 [interfaces.py:start():190] Started cpu monitoring
+2023-05-11 00:11:41,557 DEBUG   HandlerThread:36560 [system_info.py:probe():195] Probing system
+2023-05-11 00:11:41,557 INFO    SystemMonitor:36560 [interfaces.py:start():190] Started disk monitoring
+2023-05-11 00:11:41,558 INFO    SystemMonitor:36560 [interfaces.py:start():190] Started memory monitoring
+2023-05-11 00:11:41,559 INFO    SystemMonitor:36560 [interfaces.py:start():190] Started network monitoring
+2023-05-11 00:11:41,565 DEBUG   HandlerThread:36560 [system_info.py:_probe_git():180] Probing git
+2023-05-11 00:11:41,586 DEBUG   HandlerThread:36560 [system_info.py:_probe_git():188] Probing git done
+2023-05-11 00:11:41,586 DEBUG   HandlerThread:36560 [system_info.py:probe():240] Probing system done
+2023-05-11 00:11:41,587 DEBUG   HandlerThread:36560 [system_monitor.py:probe():210] {'os': 'macOS-10.16-x86_64-i386-64bit', 'python': '3.9.0', 'heartbeatAt': '2023-05-11T04:11:41.557468', 'startedAt': '2023-05-11T04:11:41.094830', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/Users/eduora/PycharmProjects/DRO_OfflineRL/main.py', 'codePath': 'main.py', 'git': {'remote': 'git@github.com:Ytinghu/DRO_OfflineRL.git', 'commit': '64859e8b44fc1f3312c34bb94ee036815a384709'}, 'email': 'yhu54@buffalo.edu', 'root': '/Users/eduora/PycharmProjects/DRO_OfflineRL', 'host': 'dhcp020-192-132.wireless.buffalo.edu', 'username': 'eduora', 'executable': '/Users/eduora/opt/anaconda3/envs/rl/bin/python', 'cpu_count': 4, 'cpu_count_logical': 8, 'cpu_freq': {'current': 2000, 'min': 2000, 'max': 2000}, 'cpu_freq_per_core': [{'current': 2000, 'min': 2000, 'max': 2000}], 'disk': {'total': 465.62699127197266, 'used': 20.41848373413086}, 'memory': {'total': 16.0}}
+2023-05-11 00:11:41,587 INFO    HandlerThread:36560 [system_monitor.py:probe():211] Finished collecting system info
+2023-05-11 00:11:41,587 INFO    HandlerThread:36560 [system_monitor.py:probe():214] Publishing system info
+2023-05-11 00:11:41,587 DEBUG   HandlerThread:36560 [system_info.py:_save_pip():51] Saving list of pip packages installed into the current environment
+2023-05-11 00:11:41,588 DEBUG   HandlerThread:36560 [system_info.py:_save_pip():67] Saving pip packages done
+2023-05-11 00:11:41,588 DEBUG   HandlerThread:36560 [system_info.py:_save_conda():74] Saving list of conda packages installed into the current environment
