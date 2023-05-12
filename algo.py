@@ -124,7 +124,7 @@ class DP:
         action = np.argmax(policy[self.states.index(state)])
         total_reward = 0
         step = 0
-        while (not terminated) or (step < self.args.maxstep):
+        while (not terminated) and (step < self.args.maxstep):
             step += 1
             pos, r, terminated, _ = self.env.step(action)
             total_reward += r
@@ -190,18 +190,16 @@ class DRO:
         # sample offline dataset
         self.make_dataset()
         self.make_datafreq()
-        V, policy = self.policy_iter()
-        return policy
+        policy, reward, step = self.policy_iter()
+        return policy, reward, step
 
     def policy_iter(self):
         V = np.zeros(len(self.states))
         epoch = 0  # update policy per epoch
-        max_epoch = 100
         rewards = []
         end_steps = []
-        record = np.zeros((max_epoch, len(self.states)))
         while True:
-            record[epoch, :] = V
+            # record[epoch, :] = V
             epoch += 1
             delta = 0
             V_pre = copy.copy(V)
@@ -222,9 +220,9 @@ class DRO:
             end_steps.append(end_step)
             delta = max(delta, np.mean(np.abs(V_pre - V)))
             print(epoch, delta)
-            if epoch > max_epoch-1:
+            if delta < self.args.theta:
                 break
-        np.savetxt('csvs/dro_value.csv', record, delimiter=',')
+
         plt.figure()
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4), dpi=100)
         ax1.plot(rewards)
@@ -237,10 +235,11 @@ class DRO:
         ax2.set_ylabel('Steps before terminate')
         ax2.grid()
         plt.show()
-        return V, policy
+        return policy, reward, end_step
 
     def get_radius(self, s, a):
-        radius = math.sqrt(math.log(len(self.states)/self.args.delta)/(2*np.sum(self.datafreq[s][a])))
+        # radius = math.sqrt(math.log(len(self.states)/self.args.delta)/(2*np.sum(self.datafreq[s][a])))
+        radius = math.log(1/self.args.delta)/np.sum(self.datafreq[s][a])
         if radius > 2:
             return 2
         else:
@@ -262,24 +261,170 @@ class DRO:
             action = np.argmax(policy[self.states.index(state)])
         return reward, step
 
-    def demo(self, policy):
-        # self.env.verbose = True
+    # def demo(self, policy):
+    #     # self.env.verbose = True
+    #     _ = self.env.reset()
+    #     terminated = False
+    #     state = self.states[0]
+    #     pos = state2pos(state, self.gridsize)
+    #     self.env.change_start_state(pos)
+    #     action = np.argmax(policy[self.states.index(state)])
+    #     total_reward = 0
+    #     step = 0
+    #     max_step = 500  # surpass max_step stop the env
+    #     while (not terminated) and (step < max_step):
+    #         step += 1
+    #         pos, r, terminated, _ = self.env.step(action)
+    #         total_reward += r
+    #         state = pos2state(pos, self.gridsize)
+    #         action = np.argmax(policy[self.states.index(state)])
+    #
+    #     return total_reward, step
+
+
+class DP_EXP:
+    def __init__(self, args):
+        self.args = args
+        self.env = GridworldEnv()
+        self.actions = self.env.action_space.n
+        tmp = np.array(np.where(self.env.start_grid_map != 1))
+        self.gridsize = self.env.start_grid_map.shape[1]
+        self.states = (tmp[0] * self.gridsize + tmp[1]).tolist()
+        self.dataset = ReplayBuffer(self.args)
+        self.rewardmap = np.zeros((len(self.states), self.actions))
+        self.datafreq = np.zeros((len(self.states), self.actions, len(self.states)))
+
+    def make_dataset(self):
+        # sample all state-action first to make sure P(s,a)>0
+        for s in range(len(self.states)):
+            state = self.states[s]
+            pos = state2pos(state, self.gridsize)
+            for action in range(self.actions):
+                self.env.change_start_state(pos)
+                next_pos, r, terminated, _ = self.env.step(action)
+                next_state = pos2state(next_pos, self.gridsize)
+                self.rewardmap[s][action] = r
+                self.dataset.add(state, action, next_state, r, terminated)
+
+        # randomly add state-action
+        Done = False
+        while not Done:
+            _ = self.env.reset()
+            max_step = 10
+            for s in range(len(self.states)):
+                step = 0
+                state = self.states[s]
+                pos = state2pos(state, self.gridsize)
+                self.env.change_start_state(pos)
+                while step < max_step:
+                    step += 1
+                    action = np.random.choice(range(self.actions))
+                    next_pos, r, terminated, _ = self.env.step(action)
+                    next_state = pos2state(next_pos, self.gridsize)
+                    self.dataset.add(state, action, next_state, r, terminated)
+                    state = next_state
+                if self.dataset.__len__() == self.args.buffersize:
+                    Done = True
+                    break
+                print(self.dataset.__len__())
+
+    def make_datafreq(self):
+        for s in range(len(self.states)):
+            for a in range(self.actions):
+                for s_next in range(len(self.states)):
+                    self.datafreq[s, a, s_next] = self.dataset.inquire_num(self.states[s],a,self.states[s_next])
+
+    def run(self):
+        # sample offline dataset
+        self.make_dataset()
+        self.make_datafreq()
+        policy, reward, step = self.policy_iter()
+        return policy, reward, step
+
+    def policy_iter(self):
+        V = np.zeros(len(self.states))
+        epoch = 0  # update policy per epoch
+        rewards = []
+        end_steps = []
+        while True:
+            epoch += 1
+            delta = 0
+            V_pre = copy.copy(V)
+            policy = np.zeros([len(self.states), self.actions]) / self.actions
+            for s in range(len(self.states)):
+                Q = np.zeros(self.actions)
+                for a in range(self.actions):
+                    next_state_idx = np.where(self.datafreq[s][a] != 0)[0][0]
+                    b = self.cal_b(s, a)
+                    Q[a] += self.rewardmap[s][a] + V_pre[next_state_idx] - b
+                Vs = np.max(Q)
+                policy[s][np.argmax(Q)] = 1.0
+                V[s] = Vs
+            reward, end_step = self.run_with_current_policy(policy)
+            rewards.append(reward)
+            end_steps.append(end_step)
+            delta = max(delta, np.mean(np.abs(V_pre - V)))
+            print(epoch, delta)
+            if delta < self.args.theta:
+                break
+
+        plt.figure()
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4), dpi=100)
+        ax1.plot(rewards)
+        ax1.set_xlabel('Episode')
+        ax1.set_ylabel('Total Reward')
+        ax1.grid()
+
+        ax2.plot(end_steps)
+        ax2.set_xlabel('Episode')
+        ax2.set_ylabel('Steps before terminate')
+        ax2.grid()
+        plt.show()
+        return policy, reward, end_step
+
+    def cal_b(self, s, a):
+        N = np.sum(self.datafreq[s][a])
+        if N < 1:
+            N = 1
+        b = 1/(1-self.args.gamma)*math.sqrt(1/N)
+
+        return b
+
+    def run_with_current_policy(self, policy):
         _ = self.env.reset()
+        reward = 0
+        step = 0
         terminated = False
         pos = self.env.agent_start_state
         state = pos2state(pos, self.gridsize)
         action = np.argmax(policy[self.states.index(state)])
-        total_reward = 0
-        step = 0
-        max_step = 500  # surpass max_step stop the env
-        while (not terminated) or (step < max_step):
+        while (not terminated) and (step < self.args.maxstep):
             step += 1
             pos, r, terminated, _ = self.env.step(action)
-            total_reward += r
             state = pos2state(pos, self.gridsize)
+            reward += r
             action = np.argmax(policy[self.states.index(state)])
+        return reward, step
 
-        return total_reward, step
+    # def demo(self, policy):
+    #     # self.env.verbose = True
+    #     _ = self.env.reset()
+    #     terminated = False
+    #     state = self.states[0]
+    #     pos = state2pos(state, self.gridsize)
+    #     self.env.change_start_state(pos)
+    #     action = np.argmax(policy[self.states.index(state)])
+    #     total_reward = 0
+    #     step = 0
+    #     max_step = 500  # surpass max_step stop the env
+    #     while (not terminated) and (step < max_step):
+    #         step += 1
+    #         pos, r, terminated, _ = self.env.step(action)
+    #         total_reward += r
+    #         state = pos2state(pos, self.gridsize)
+    #         action = np.argmax(policy[self.states.index(state)])
+    #
+    #     return total_reward, step
 
 
 class ReplayBuffer(object):

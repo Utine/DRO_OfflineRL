@@ -1,0 +1,42 @@
+{
+    "os": "macOS-10.16-x86_64-i386-64bit",
+    "python": "3.9.0",
+    "heartbeatAt": "2023-05-12T02:33:16.295166",
+    "startedAt": "2023-05-12T02:33:15.853847",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/Users/eduora/PycharmProjects/DRO_OfflineRL/main.py",
+    "codePath": "main.py",
+    "git": {
+        "remote": "git@github.com:Ytinghu/DRO_OfflineRL.git",
+        "commit": "6315bb1f031bc77b2848aa6704532037e050ad4c"
+    },
+    "email": "yhu54@buffalo.edu",
+    "root": "/Users/eduora/PycharmProjects/DRO_OfflineRL",
+    "host": "dhcp020-192-132.wireless.buffalo.edu",
+    "username": "eduora",
+    "executable": "/Users/eduora/opt/anaconda3/envs/rl/bin/python",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 2000,
+        "min": 2000,
+        "max": 2000
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2000,
+            "min": 2000,
+            "max": 2000
+        }
+    ],
+    "disk": {
+        "total": 465.62699127197266,
+        "used": 20.41848373413086
+    },
+    "memory": {
+        "total": 16.0
+    }
+}

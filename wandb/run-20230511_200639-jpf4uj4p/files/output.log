@@ -1,0 +1,20 @@
+
+1038 39
+/Users/eduora/PycharmProjects/DRO_OfflineRL/algo.py:212: RuntimeWarning: invalid value encountered in divide
+  center = self.datafreq[s][a] / np.sum(self.datafreq[s][a])
+Traceback (most recent call last):
+  File "/Users/eduora/PycharmProjects/DRO_OfflineRL/main.py", line 36, in <module>
+    DRO_policy = algo.run()
+  File "/Users/eduora/PycharmProjects/DRO_OfflineRL/algo.py", line 193, in run
+    V, policy = self.policy_iter()
+  File "/Users/eduora/PycharmProjects/DRO_OfflineRL/algo.py", line 215, in policy_iter
+    solution = TV_opt(V_pre, center, radius)
+  File "/Users/eduora/PycharmProjects/DRO_OfflineRL/utils.py", line 115, in TV_opt
+    prob.solve()  # Returns the optimal value.
+  File "/Users/eduora/opt/anaconda3/envs/rl/lib/python3.9/site-packages/cvxpy/problems/problem.py", line 493, in solve
+    return solve_func(self, *args, **kwargs)
+  File "/Users/eduora/opt/anaconda3/envs/rl/lib/python3.9/site-packages/cvxpy/problems/problem.py", line 1068, in _solve
+    self.unpack_results(solution, solving_chain, inverse_data)
+  File "/Users/eduora/opt/anaconda3/envs/rl/lib/python3.9/site-packages/cvxpy/problems/problem.py", line 1393, in unpack_results
+    raise error.SolverError(
+cvxpy.error.SolverError: Solver 'ECOS' failed. Try another solver, or solve with verbose=True for more information.

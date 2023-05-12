@@ -1,7 +1,8 @@
 env: MiniGrid-Fetch-5x5-N2-v0
 gamma: 0.95
-theta: 0.00001
-maxstep: 500
+theta: 0.001
+maxstep: 1000
 buffersize: 3000
 delta: 0.1
-num: 3
+datasize_num: 20
+gamma_num: 51
