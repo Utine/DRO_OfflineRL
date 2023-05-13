@@ -141,44 +141,60 @@ class DRO:
         self.actions = self.env.action_space.n
         tmp = np.array(np.where(self.env.start_grid_map != 1))
         self.gridsize = self.env.start_grid_map.shape[1]
-        self.states = (tmp[0] * self.gridsize + tmp[1]).tolist()
+        self.states = (tmp[0] * self.gridsize + tmp[1])
         self.dataset = ReplayBuffer(self.args)
-        self.rewardmap = np.zeros((len(self.states), self.actions))
+        self.rewardmap = np.ones((len(self.states), self.actions))*(-100)
         self.datafreq = np.zeros((len(self.states), self.actions, len(self.states)))
 
     def make_dataset(self):
-        # sample all state-action first to make sure P(s,a)>0
-        for s in range(len(self.states)):
-            state = self.states[s]
-            pos = state2pos(state, self.gridsize)
-            for action in range(self.actions):
-                self.env.change_start_state(pos)
-                next_pos, r, terminated, _ = self.env.step(action)
-                next_state = pos2state(next_pos, self.gridsize)
-                self.rewardmap[s][action] = r
-                self.dataset.add(state, action, next_state, r, terminated)
-
-        # randomly add state-action
         Done = False
         while not Done:
-            _ = self.env.reset()
-            max_step = 10
-            for s in range(len(self.states)):
-                step = 0
-                state = self.states[s]
-                pos = state2pos(state, self.gridsize)
-                self.env.change_start_state(pos)
-                while step < max_step:
-                    step += 1
-                    action = np.random.choice(range(self.actions))
-                    next_pos, r, terminated, _ = self.env.step(action)
-                    next_state = pos2state(next_pos, self.gridsize)
-                    self.dataset.add(state, action, next_state, r, terminated)
-                    state = next_state
-                if self.dataset.__len__() == self.args.buffersize:
-                    Done = True
-                    break
-                print(self.dataset.__len__())
+            state = np.random.choice(self.states, 1, replace=False)[0]
+            state_index = np.where(self.states == state)[0][0]
+            pos = state2pos(state, self.gridsize)
+            action = np.random.choice(np.arange(self.actions), 1, replace=False)[0]
+            self.env.change_start_state(pos)
+            next_pos, r, terminated, _ = self.env.step(action)
+            next_state = pos2state(next_pos, self.gridsize)
+            self.rewardmap[state_index][action] = r
+            self.dataset.add(state, action, next_state, r, terminated)
+            if self.dataset.__len__() == self.args.buffersize:
+                Done = True
+                break
+            print(self.dataset.__len__())
+
+        # sample all state-action first to make sure P(s,a)>0
+        # for s in range(len(self.states)):
+        #     state = self.states[s]
+        #     pos = state2pos(state, self.gridsize)
+        #     for action in range(self.actions):
+        #         self.env.change_start_state(pos)
+        #         next_pos, r, terminated, _ = self.env.step(action)
+        #         next_state = pos2state(next_pos, self.gridsize)
+        #         self.rewardmap[s][action] = r
+        #         self.dataset.add(state, action, next_state, r, terminated)
+        #
+        # # randomly add state-action
+        # Done = False
+        # while not Done:
+        #     _ = self.env.reset()
+        #     max_step = 10
+        #     for s in range(len(self.states)):
+        #         step = 0
+        #         state = self.states[s]
+        #         pos = state2pos(state, self.gridsize)
+        #         self.env.change_start_state(pos)
+        #         while step < max_step:
+        #             step += 1
+        #             action = np.random.choice(range(self.actions))
+        #             next_pos, r, terminated, _ = self.env.step(action)
+        #             next_state = pos2state(next_pos, self.gridsize)
+        #             self.dataset.add(state, action, next_state, r, terminated)
+        #             state = next_state
+        #         if self.dataset.__len__() == self.args.buffersize:
+        #             Done = True
+        #             break
+        #         print(self.dataset.__len__())
 
     def make_datafreq(self):
         for s in range(len(self.states)):
@@ -207,9 +223,12 @@ class DRO:
             for s in range(len(self.states)):
                 Q = np.zeros(self.actions)
                 for a in range(self.actions):
-                    center = self.datafreq[s][a] / np.sum(self.datafreq[s][a])
-                    # radius = self.get_radius(s, a)
-                    radius = 0.4
+                    if np.sum(self.datafreq[s, a, :]) == 0:
+                        center = np.ones(self.states.size)* (1/self.states.size)
+                    else:
+                        center = self.datafreq[s][a] / np.sum(self.datafreq[s][a])
+                    radius = self.get_radius(s, a)
+                    # radius = 0.4
                     solution = TV_opt(V_pre, center, radius)
                     Q[a] += self.rewardmap[s][a] + self.args.gamma * solution
                 Vs = np.max(Q)
@@ -250,15 +269,16 @@ class DRO:
         reward = 0
         step = 0
         terminated = False
-        pos = self.env.agent_start_state
-        state = pos2state(pos, self.gridsize)
-        action = np.argmax(policy[self.states.index(state)])
+        state = self.states[0]
+        pos = state2pos(state, self.gridsize)
+        self.env.change_start_state(pos)
+        action = np.argmax(policy[np.where(self.states == state)[0][0]])
         while (not terminated) and (step < self.args.maxstep):
             step += 1
             pos, r, terminated, _ = self.env.step(action)
             state = pos2state(pos, self.gridsize)
             reward += r
-            action = np.argmax(policy[self.states.index(state)])
+            action = np.argmax(policy[np.where(self.states == state)[0][0]])
         return reward, step
 
     # def demo(self, policy):
@@ -289,44 +309,59 @@ class DP_EXP:
         self.actions = self.env.action_space.n
         tmp = np.array(np.where(self.env.start_grid_map != 1))
         self.gridsize = self.env.start_grid_map.shape[1]
-        self.states = (tmp[0] * self.gridsize + tmp[1]).tolist()
+        self.states = (tmp[0] * self.gridsize + tmp[1])
         self.dataset = ReplayBuffer(self.args)
-        self.rewardmap = np.zeros((len(self.states), self.actions))
+        self.rewardmap = np.ones((len(self.states), self.actions)) * (-100)
         self.datafreq = np.zeros((len(self.states), self.actions, len(self.states)))
 
     def make_dataset(self):
-        # sample all state-action first to make sure P(s,a)>0
-        for s in range(len(self.states)):
-            state = self.states[s]
-            pos = state2pos(state, self.gridsize)
-            for action in range(self.actions):
-                self.env.change_start_state(pos)
-                next_pos, r, terminated, _ = self.env.step(action)
-                next_state = pos2state(next_pos, self.gridsize)
-                self.rewardmap[s][action] = r
-                self.dataset.add(state, action, next_state, r, terminated)
-
-        # randomly add state-action
         Done = False
         while not Done:
-            _ = self.env.reset()
-            max_step = 10
-            for s in range(len(self.states)):
-                step = 0
-                state = self.states[s]
-                pos = state2pos(state, self.gridsize)
-                self.env.change_start_state(pos)
-                while step < max_step:
-                    step += 1
-                    action = np.random.choice(range(self.actions))
-                    next_pos, r, terminated, _ = self.env.step(action)
-                    next_state = pos2state(next_pos, self.gridsize)
-                    self.dataset.add(state, action, next_state, r, terminated)
-                    state = next_state
-                if self.dataset.__len__() == self.args.buffersize:
-                    Done = True
-                    break
-                print(self.dataset.__len__())
+            state = np.random.choice(self.states, 1, replace=False)[0]
+            state_index = np.where(self.states == state)[0][0]
+            pos = state2pos(state, self.gridsize)
+            action = np.random.choice(np.arange(self.actions), 1, replace=False)[0]
+            self.env.change_start_state(pos)
+            next_pos, r, terminated, _ = self.env.step(action)
+            next_state = pos2state(next_pos, self.gridsize)
+            self.rewardmap[state_index][action] = r
+            self.dataset.add(state, action, next_state, r, terminated)
+            if self.dataset.__len__() == self.args.buffersize:
+                Done = True
+                break
+            print(self.dataset.__len__())
+        # sample all state-action first to make sure P(s,a)>0
+        # for s in range(len(self.states)):
+        #     state = self.states[s]
+        #     pos = state2pos(state, self.gridsize)
+        #     for action in range(self.actions):
+        #         self.env.change_start_state(pos)
+        #         next_pos, r, terminated, _ = self.env.step(action)
+        #         next_state = pos2state(next_pos, self.gridsize)
+        #         self.rewardmap[s][action] = r
+        #         self.dataset.add(state, action, next_state, r, terminated)
+        #
+        # # randomly add state-action
+        # Done = False
+        # while not Done:
+        #     _ = self.env.reset()
+        #     max_step = 10
+        #     for s in range(len(self.states)):
+        #         step = 0
+        #         state = self.states[s]
+        #         pos = state2pos(state, self.gridsize)
+        #         self.env.change_start_state(pos)
+        #         while step < max_step:
+        #             step += 1
+        #             action = np.random.choice(range(self.actions))
+        #             next_pos, r, terminated, _ = self.env.step(action)
+        #             next_state = pos2state(next_pos, self.gridsize)
+        #             self.dataset.add(state, action, next_state, r, terminated)
+        #             state = next_state
+        #         if self.dataset.__len__() == self.args.buffersize:
+        #             Done = True
+        #             break
+        #         print(self.dataset.__len__())
 
     def make_datafreq(self):
         for s in range(len(self.states)):
@@ -354,9 +389,12 @@ class DP_EXP:
             for s in range(len(self.states)):
                 Q = np.zeros(self.actions)
                 for a in range(self.actions):
-                    next_state_idx = np.where(self.datafreq[s][a] != 0)[0][0]
+                    if np.sum(self.datafreq[s, a, :]) == 0:
+                        next_state_idx = s
+                    else:
+                        next_state_idx = np.where(self.datafreq[s][a] != 0)[0][0]
                     b = self.cal_b(s, a)
-                    Q[a] += self.rewardmap[s][a] + V_pre[next_state_idx] - b
+                    Q[a] += self.rewardmap[s][a] + self.args.gamma*V_pre[next_state_idx] - b
                 Vs = np.max(Q)
                 policy[s][np.argmax(Q)] = 1.0
                 V[s] = Vs

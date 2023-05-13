@@ -1,6 +1,6 @@
 gamma: 0.95
 theta: 0.001
-maxstep: 1000
+maxstep: 200
 buffersize: 3000
 delta: 0.1
 datasize_num: 5

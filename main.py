@@ -26,15 +26,14 @@ if __name__ == "__main__":
     # Exp1: Run DRO
 
     # 1): fix gamma, adjust buffer size
-    base_buffersize = 1000
+    base_buffersize = 500
     DRO_total_rewards = []
     DRO_step_for_terminated = []
     for i in range(args.datasize_num):
         args.buffersize = base_buffersize + i*500
         exp_name = 'DRO' + '_exp1_' + str(i) + '_' + str(args.buffersize)
         algo = DRO(args)
-        DRO_policy = algo.run()
-        DRO_rewards, step = algo.run_with_current_policy(DRO_policy)
+        DRO_policy, DRO_rewards, step = algo.run()
         DRO_total_rewards.append(DRO_rewards)
         DRO_step_for_terminated.append(step)
         np.savetxt('./learnedpolicy/' + exp_name + '.csv', DRO_policy, delimiter=',')
