@@ -435,13 +435,13 @@ class DP_EXP:
         terminated = False
         pos = self.env.agent_start_state
         state = pos2state(pos, self.gridsize)
-        action = np.argmax(policy[self.states.index(state)])
+        action = np.argmax(policy[np.where(self.states == state)[0][0]])
         while (not terminated) and (step < self.args.maxstep):
             step += 1
             pos, r, terminated, _ = self.env.step(action)
             state = pos2state(pos, self.gridsize)
             reward += r
-            action = np.argmax(policy[self.states.index(state)])
+            action = np.argmax(policy[np.where(self.states == state)[0][0]])
         return reward, step
 
     # def demo(self, policy):
