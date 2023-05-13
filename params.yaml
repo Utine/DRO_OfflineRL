@@ -1,5 +1,5 @@
 gamma: 0.95
-theta: 0.001
+theta: 0.01
 maxstep: 200
 buffersize: 3000
 delta: 0.1
